@@ -47,3 +47,4 @@ async function getFormattedWeatherData(url, params) {
     if (weatherData !== -1) {
         console.log(weatherData);
     }
+//https://open-meteo.com/en/docs?bounding_box=null,null,null,null&latitude=-34.9033&longitude=-56.1882&timezone=auto&hourly=&current=temperature_2m,apparent_temperature,precipitation
