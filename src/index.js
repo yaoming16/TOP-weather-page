@@ -1,73 +1,74 @@
 import "./style.css";
 
-import { fetchWeatherApi } from 'openmeteo';
+import displayWeatherData from "./weatherDisplay/weatherDisplay.js";
+import {
+    getFormattedWeatherData,
+    getFormattedLocationData,
+} from "./functions.js";
 
 const params = {
-	"latitude": -34.9033,
-	"longitude": -56.1882,
-	"current": ["temperature_2m", "apparent_temperature", "precipitation"],
-	"timezone": "auto",
+    latitude: undefined,
+    longitude: undefined,
+    current: [
+        "temperature_2m",
+        "apparent_temperature",
+        "precipitation",
+        "is_day",
+        "rain",
+    ],
+    timezone: "auto",
 };
 
-async function getFormattedWeatherData(url, params) {
-    let weatherDataResponse;
-    try { 
-        if (!url || !params) throw new Error("URL or parameters are missing.");
-        weatherDataResponse = await fetchWeatherApi(url, params);
-    } catch (error) {
-        console.error("Error fetching weather data:", error);
-        return null;
-    }
-    
-    weatherDataResponse = weatherDataResponse[0];
-    
-    const utcOffsetSeconds = weatherDataResponse.utcOffsetSeconds();
-    const current = weatherDataResponse.current();
-    const weatherData = {
-        current: {
-            time: new Date((Number(current.time()) + utcOffsetSeconds) * 1000),
-            temperature_2m: current.variables(0).value(),
-            apparent_temperature: current.variables(1).value(),
-            precipitation: current.variables(2).value(),
-        },
-    };
-    return weatherData;
-}
-    
 const weatherUrl = "https://api.open-meteo.com/v1/forecast";
-const weatherData = await getFormattedWeatherData(weatherUrl, params);
-if (weatherData !== null) {
-    console.log(weatherData);
-}
 
-let city = "Montevideo";
-const locationUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=en&format=json`;
+// Form submit event
+const weatherForm = document.getElementById("weatherForm");
+const cityInput = document.getElementById("city");
 
+weatherForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-// Need to check this function 
-async function getFormattedLocationData(url, userSelectedCity) {
+    const userSelectedCity = cityInput.value.trim().toLowerCase();
 
-    try {
-        let locationDataResponse = await fetch(url);
-        locationDataResponse = await locationDataResponse.json();
-        locationDataResponse = locationDataResponse.results[0];
-        if (!locationDataResponse) throw new Error("Location not found");
-        return {
-            latitude: locationDataResponse.latitude,
-            longitude: locationDataResponse.longitude,
-            name: locationDataResponse.name,
-        };
-    } catch (error) {
-        console.error("Error fetching location data:", error);
-        return null;
+    // If no value is entered in the input field show an error
+    if (!userSelectedCity || userSelectedCity.length === 0) {
+        console.error("No city selected");
+        cityInput.classList.add("input-error");
+        return;
+    } else {
+        cityInput.classList.remove("input-error");
     }
 
-}
+    // Get location data based on user input
+    const locationData = await getFormattedLocationData(userSelectedCity);
 
+    //Set params based on location data
+    if (locationData) {
+        params.latitude = locationData.latitude;
+        params.longitude = locationData.longitude;
+    }
 
+    // Get weather data based on location data
+    const weatherData = await getFormattedWeatherData(weatherUrl, params);
+    if (weatherData !== null) {
+        // Display the weather data on the page
+        const weatherDisplayHTML = displayWeatherData(
+            locationData,
+            weatherData
+        );
+        const weatherDisplayContainer = document.getElementById(
+            "weatherDisplayContainer"
+        );
 
+        while (weatherDisplayContainer.firstChild) {
+            weatherDisplayContainer.removeChild(
+                weatherDisplayContainer.firstChild
+            );
+        }
 
-
+        weatherDisplayContainer.appendChild(weatherDisplayHTML);
+    }
+});
 
 //https://open-meteo.com/en/docs?bounding_box=null,null,null,null&latitude=-34.9033&longitude=-56.1882&timezone=auto&hourly=&current=temperature_2m,apparent_temperature,precipitation
 //https://open-meteo.com/en/docs/geocoding-api
