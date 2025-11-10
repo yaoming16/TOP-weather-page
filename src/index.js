@@ -9,6 +9,7 @@ import {
 const params = {
     latitude: undefined,
     longitude: undefined,
+    forecast_days: 7,
     current: [
         "temperature_2m",
         "apparent_temperature",
@@ -17,6 +18,12 @@ const params = {
         "rain",
     ],
     timezone: "auto",
+    daily: [
+        "temperature_2m_max",
+        "temperature_2m_min",
+        "apparent_temperature_min",
+        "apparent_temperature_max",
+    ],
 };
 
 const weatherUrl = "https://api.open-meteo.com/v1/forecast";

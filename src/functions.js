@@ -14,6 +14,7 @@ export async function getFormattedWeatherData(url, params) {
 
     const utcOffsetSeconds = weatherDataResponse.utcOffsetSeconds();
     const current = weatherDataResponse.current();
+    const daily = weatherDataResponse.daily();
     const weatherData = {
         current: {
             time: new Date((Number(current.time()) + utcOffsetSeconds) * 1000),
@@ -23,7 +24,28 @@ export async function getFormattedWeatherData(url, params) {
             is_day: current.variables(3).value(),
             rain: current.variables(4).value(),
         },
+        daily: {
+            time: Array.from(
+                {
+                    length:
+                        (Number(daily.timeEnd()) - Number(daily.time())) /
+                        daily.interval(),
+                },
+                (_, i) =>
+                    new Date(
+                        (Number(daily.time()) +
+                            i * daily.interval() +
+                            utcOffsetSeconds) *
+                            1000
+                    )
+            ),
+            temperature_2m_max: daily.variables(0).valuesArray(),
+            temperature_2m_min: daily.variables(1).valuesArray(),
+            apparent_temperature_min: daily.variables(2).valuesArray(),
+            apparent_temperature_max: daily.variables(3).valuesArray(),
+        },
     };
+    console.log("Formatted weather data:", weatherData);
     return weatherData;
 }
 
