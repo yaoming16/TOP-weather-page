@@ -28,5 +28,33 @@ export default function displayWeatherData(locationData, weatherData) {
         }
     });
 
+    const forecastContainer =
+        weatherDisplay.querySelector("#forecastContainer");
+    if (forecastContainer) {
+        for (let i = 0; i < weatherData.daily.time.length; i++) {
+            const weatherDay = document.createElement("div");
+            weatherDay.classList.add("weatherDay");
+
+            const dayTitle = document.createElement("h4");
+            dayTitle.classList.add("day");
+            dayTitle.textContent = new Date(
+                weatherData.daily.time[i]
+            ).toLocaleDateString();
+            weatherDay.appendChild(dayTitle);
+
+            const minTemp = document.createElement("p");
+            minTemp.classList.add("temperature");
+            minTemp.textContent = `Min Temperature: ${weatherData.daily.temperature_2m_min[i]} °C`;
+            weatherDay.appendChild(minTemp);
+
+            const maxTemp = document.createElement("p");
+            maxTemp.classList.add("temperature");
+            maxTemp.textContent = `Max Temperature: ${weatherData.daily.temperature_2m_max[i]} °C`;
+            weatherDay.appendChild(maxTemp);
+
+            forecastContainer.appendChild(weatherDay);
+        }
+    }
+
     return weatherDisplay;
 }
